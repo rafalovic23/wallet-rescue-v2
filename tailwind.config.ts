@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss'
+import { type Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
@@ -18,11 +18,6 @@ const config: Config = {
           DEFAULT: '#0F172A',
           dark: '#020617',
           light: '#1E293B',
-        },
-        accent: {
-          DEFAULT: '#22D3EE',
-          dark: '#06B6D4',
-          light: '#67E8F9',
         },
       },
       animation: {
