@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { login, logout, isAuthenticated, user, isReady } = useAuth()
+  const { login, logout, isAuthenticated, isReady } = useAuth()
 
   return (
     <header className="fixed w-full bg-secondary/95 backdrop-blur-sm border-b border-gray-800">
