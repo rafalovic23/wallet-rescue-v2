@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import {
   Home,
@@ -11,7 +12,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  BellRing
 } from 'lucide-react'
 
 const sidebarLinks = [
@@ -22,66 +24,133 @@ const sidebarLinks = [
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]
 
+type UserSectionProps = {
+  mobile?: boolean;
+}
+
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { logout, user } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    setIsNotificationsOpen(false)
+  }, [pathname])
+
+  const SidebarContent = () => (
+    <nav className="flex-1 space-y-1 px-2">
+      {sidebarLinks.map((item) => (
+        <Link
+          key={item.name}
+          href={item.href}
+          className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+            pathname === item.href
+              ? 'bg-primary/20 text-primary-light'
+              : 'text-gray-300 hover:bg-primary/10 hover:text-primary-light'
+          }`}
+        >
+          <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+          {item.name}
+        </Link>
+      ))}
+    </nav>
+  )
+
+  const UserSection = ({ mobile = false }: UserSectionProps) => (
+    <div className="flex flex-shrink-0 border-t border-gray-800 p-4">
+      <div className="flex items-center w-full">
+        <div className={`flex flex-col ${mobile ? 'w-full' : ''}`}>
+          <p className="text-sm font-medium text-white truncate">
+          </p>
+          <button
+            onClick={logout}
+            className="mt-1 flex items-center text-sm text-gray-400 hover:text-primary-light transition-colors"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-secondary-dark">
-      {/* Sidebar - Desktop */}
+      {/* Desktop Sidebar */}
       <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
         <div className="flex flex-grow flex-col overflow-y-auto border-r border-gray-800 bg-secondary pt-5">
           <div className="flex flex-shrink-0 items-center px-4">
             <span className="text-xl font-bold text-white">Wallet Rescue</span>
           </div>
           <div className="mt-8 flex flex-1 flex-col">
-            <nav className="flex-1 space-y-1 px-2">
-              {sidebarLinks.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="group flex items-center px-2 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-primary/10 hover:text-primary-light"
-                >
-                  <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
+            <SidebarContent />
           </div>
-          <div className="flex flex-shrink-0 border-t border-gray-800 p-4">
-            <div className="flex items-center">
-              <div className="ml-3">
-                <p className="text-sm font-medium text-white">{user?.email}</p>
-                <button
-                  onClick={logout}
-                  className="flex items-center text-sm font-medium text-gray-400 hover:text-primary-light"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </button>
-              </div>
-            </div>
+          <UserSection />
+        </div>
+      </div>
+
+      {/* Mobile header */}
+      <div className="sticky top-0 z-20 md:hidden">
+        <div className="flex h-16 items-center justify-between bg-secondary px-4 border-b border-gray-800">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="text-gray-400 hover:text-white"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+
+          <span className="text-lg font-bold text-white">Wallet Rescue</span>
+
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="relative text-gray-400 hover:text-white p-2"
+            >
+              <BellRing className="h-6 w-6" />
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full flex items-center justify-center text-xs text-white">
+                2
+              </span>
+            </button>
+
+            {isNotificationsOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setIsNotificationsOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-80 bg-secondary border border-gray-800 rounded-md shadow-lg z-40">
+                  <div className="p-4">
+                    <h3 className="text-sm font-medium text-white mb-2">Notifications</h3>
+                    <div className="space-y-2">
+                      <div className="p-2 hover:bg-secondary-dark rounded-md transition-colors">
+                        <p className="text-sm text-white">Guardian Alex validated your recovery setup</p>
+                        <p className="text-xs text-gray-400">2 minutes ago</p>
+                      </div>
+                      <div className="p-2 hover:bg-secondary-dark rounded-md transition-colors">
+                        <p className="text-sm text-white">Monthly security check reminder</p>
+                        <p className="text-xs text-gray-400">1 day ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      <div className="md:hidden">
-        <div className="fixed inset-0 z-40 flex">
+      {isMobileMenuOpen && (
+        <>
           <div
-            className={`fixed inset-0 bg-black bg-opacity-75 transition-opacity ${
-              isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className="fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-
-          <div
-            className={`fixed inset-y-0 left-0 flex w-64 flex-col bg-secondary transform transition-transform ${
-              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-          >
-            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
-              <span className="text-xl font-bold text-white">Wallet Rescue</span>
+          <div className="fixed inset-y-0 left-0 z-40 w-64 bg-secondary transform transition-transform duration-300 ease-in-out">
+            <div className="flex h-16 items-center justify-between px-4 border-b border-gray-800">
+              <span className="text-lg font-bold text-white">Wallet Rescue</span>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-gray-400 hover:text-white"
@@ -89,46 +158,19 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              <nav className="px-2 py-4 space-y-1">
-                {sidebarLinks.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="group flex items-center px-2 py-2 text-base font-medium text-gray-300 rounded-md hover:bg-primary/10 hover:text-primary-light"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <item.icon className="mr-4 h-6 w-6 flex-shrink-0" />
-                    {item.name}
-                  </Link>
-                ))}
-              </nav>
+            <div className="flex flex-col h-[calc(100%-4rem)]">
+              <div className="flex-1 overflow-y-auto py-4">
+                <SidebarContent />
+              </div>
+              <UserSection mobile />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Mobile header */}
-      <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 md:hidden">
-        <div className="flex flex-1 justify-between px-4 bg-secondary border-b border-gray-800">
-          <div className="flex flex-1 items-center">
-            <button
-              type="button"
-              className="text-gray-400 hover:text-white focus:outline-none"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="ml-4">
-              <span className="text-xl font-bold text-white">Wallet Rescue</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Main content */}
       <div className="md:pl-64">
-        <main className="min-h-screen">
+        <main className="min-h-[calc(100vh-4rem)] py-6">
           {children}
         </main>
       </div>

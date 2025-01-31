@@ -1,16 +1,16 @@
-// src/app/dashboard/page.tsx
 'use client'
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { DashboardLayout } from '@/components/dashboard/Layout'
+import { DashboardLayout } from '@/components/dashboard/layout'
 import { WalletOverview } from '@/components/dashboard/WalletOverview'
-import { GuardiansList } from '@/components/dashboard/GuardiansList'
+// On retire temporairement ces composants jusqu'à ce qu'ils soient créés
+/* import { GuardiansList } from '@/components/dashboard/GuardiansList'
 import { RecoveryStatus } from '@/components/dashboard/RecoveryStatus'
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed'*/
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const { isAuthenticated, isReady } = useAuth()
   const router = useRouter()
 
@@ -26,11 +26,15 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-        <WalletOverview />
-        <RecoveryStatus />
-        <GuardiansList />
-        <ActivityFeed />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-2xl font-bold text-white mb-6">Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <WalletOverview />
+          {/* On les ajoutera plus tard
+          <RecoveryStatus />
+          <GuardiansList />
+          <ActivityFeed /> */}
+        </div>
       </div>
     </DashboardLayout>
   )
