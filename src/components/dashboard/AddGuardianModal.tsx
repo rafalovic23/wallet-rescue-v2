@@ -6,9 +6,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { X, AlertCircle } from 'lucide-react'
 
 interface AddGuardianModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onAdd: (discordId: string) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (discordId: string) => Promise<void>;
+  isLoading: boolean;
 }
 
 export const AddGuardianModal = ({ isOpen, onClose, onAdd }: AddGuardianModalProps) => {
