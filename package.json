@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "bot": "npx tsx src/server/discord/bot.ts"
+    "bot": "tsx --require dotenv/config src/server/discord/bot.ts"
     
   },
   "dependencies": {

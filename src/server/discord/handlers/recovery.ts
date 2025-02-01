@@ -8,6 +8,8 @@ export async function handleGuardianRequest(
   interaction: ChatInputCommandInteraction,
   action: RequestAction
 ) {
+
+
   console.log(`🔄 Processing guardian ${action} request`)
   
   const wallet = interaction.options.getString('wallet', true)
