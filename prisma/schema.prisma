@@ -1,43 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model Guardian {
+  id          String         @id @default(cuid())
+  discordId   String
+  walletId    String
+  status      GuardianStatus @default(PENDING)
+  wallet      Wallet         @relation(fields: [walletId], references: [id])
+  votes       RecoveryVote[]
 }
 
 model Wallet {
-  id          String            @id @default(cuid())
-  address     String            @unique
-  guardians   Guardian[]
+  id              String            @id @default(cuid())
+  address         String            @unique
+  guardians       Guardian[]
   recoveryRequests RecoveryRequest[]
 }
 
-model Guardian {
-  id        String     @id @default(cuid())
-  walletId  String
-  wallet    Wallet     @relation(fields: [walletId], references: [id])
-  discordId String
-  username  String
-  status    GuardianStatus @default(PENDING)
-}
-
 model RecoveryRequest {
-  id        String     @id @default(cuid())
+  id        String         @id @default(cuid())
+  status    RequestStatus  @default(PENDING)
   walletId  String
-  wallet    Wallet     @relation(fields: [walletId], references: [id])
+  wallet    Wallet         @relation(fields: [walletId], references: [id])
   votes     RecoveryVote[]
 }
 
 model RecoveryVote {
-  id                String         @id @default(cuid())
+  id               String          @id @default(cuid())
+  approved         Boolean         @default(false)
+  recoveryRequest  RecoveryRequest @relation(fields: [recoveryRequestId], references: [id])
   recoveryRequestId String
-  recoveryRequest   RecoveryRequest @relation(fields: [recoveryRequestId], references: [id])
+  guardian         Guardian        @relation(fields: [guardianId], references: [id])
+  guardianId       String
+
+  @@unique([recoveryRequestId, guardianId])
 }
 
 enum GuardianStatus {
   PENDING
   ACTIVE
   REVOKED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
