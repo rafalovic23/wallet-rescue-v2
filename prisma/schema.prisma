@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Wallet {
+  id          String            @id @default(cuid())
+  address     String            @unique
+  guardians   Guardian[]
+  recoveryRequests RecoveryRequest[]
+}
+
+model Guardian {
+  id        String     @id @default(cuid())
+  walletId  String
+  wallet    Wallet     @relation(fields: [walletId], references: [id])
+  discordId String
+  username  String
+  status    GuardianStatus @default(PENDING)
+}
+
+model RecoveryRequest {
+  id        String     @id @default(cuid())
+  walletId  String
+  wallet    Wallet     @relation(fields: [walletId], references: [id])
+  votes     RecoveryVote[]
+}
+
+model RecoveryVote {
+  id                String         @id @default(cuid())
+  recoveryRequestId String
+  recoveryRequest   RecoveryRequest @relation(fields: [recoveryRequestId], references: [id])
+}
+
+enum GuardianStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+}
