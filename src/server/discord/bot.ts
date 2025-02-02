@@ -9,9 +9,8 @@ import { registerCommands } from './commands'
 import { handleGuardianRequest } from './handlers/guardian'
 import { handleRecoveryRequest } from './handlers/recovery'
 
-const DISCORD_TOKEN = process.env.DISCORD_BOT_TOKEN
 
-if (!DISCORD_TOKEN) {
+if (!process.env.DISCORD_BOT_TOKEN) {
   throw new Error('Missing DISCORD_BOT_TOKEN environment variable')
 }
 
@@ -28,12 +27,10 @@ bot.once(Events.ClientReady, (client) => {
   console.log(`✅ Bot is ready! Logged in as ${client.user.tag}`)
   console.log(`🌐 Connected to ${client.guilds.cache.size} servers`)
 
-  // Set bot activity
   client.user.setActivity('Protecting Wallets', { 
     type: ActivityType.Watching 
   })
 
-  // Register slash commands
   registerCommands().then(() => {
     console.log('✅ Commands registered successfully')
   }).catch((error) => {
@@ -41,7 +38,6 @@ bot.once(Events.ClientReady, (client) => {
   })
 })
 
-// Command handler
 bot.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return
 
@@ -85,19 +81,28 @@ process.on('unhandledRejection', (error) => {
   console.error('❌ Unhandled promise rejection:', error)
 })
 
-// Start the bot
-export function startBot() {
-  console.log('🚀 Starting bot...')
-  bot.login(DISCORD_TOKEN).then(() => {
-    console.log('🔑 Bot logged in successfully')
-  }).catch((error) => {
-    console.error('❌ Failed to log in:', error)
-  })
+export async function startBot() {
+  try {
+    console.clear()
+    console.log('\n🤖 Initializing bot...')
+    
+    if (!process.env.DISCORD_BOT_TOKEN) {
+      throw new Error('Missing DISCORD_BOT_TOKEN in environment variables')
+    }
+
+    await bot.login(process.env.DISCORD_BOT_TOKEN)
+    console.log('✅ Bot successfully logged in!')
+  } catch (error) {
+    console.error('❌ Failed to start bot:', error)
+    process.exit(1)
+  }
 }
 
-// Graceful shutdown
 process.on('SIGINT', () => {
   console.log('📴 Shutting down bot...')
   bot.destroy()
   process.exit(0)
 })
+
+// Start the bot
+startBot()
