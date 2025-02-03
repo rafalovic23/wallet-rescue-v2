@@ -12,15 +12,18 @@ model Guardian {
   discordId   String
   walletId    String
   status      GuardianStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   wallet      Wallet         @relation(fields: [walletId], references: [id])
   votes       RecoveryVote[]
 }
 
 model Wallet {
-  id              String            @id @default(cuid())
-  address         String            @unique
-  guardians       Guardian[]
-  recoveryRequests RecoveryRequest[]
+  id                String            @id @default(cuid())
+  address           String            @unique
+  encryptedPrivateKey String
+  guardians         Guardian[]
+  recoveryRequests  RecoveryRequest[]
 }
 
 model RecoveryRequest {
@@ -38,7 +41,7 @@ model RecoveryVote {
   recoveryRequestId String
   guardian         Guardian        @relation(fields: [guardianId], references: [id])
   guardianId       String
-
+  
   @@unique([recoveryRequestId, guardianId])
 }
 
@@ -52,20 +55,4 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
-}
-
-model Guardian {
-  id          String   @id @default(cuid())
-  discordId   String
-  status      Status   @default(PENDING)
-  wallet      Wallet   @relation(fields: [walletId], references: [id])
-  walletId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-enum Status {
-  PENDING
-  ACTIVE
-  REVOKED
 }

@@ -21,12 +21,17 @@ export const WalletOverview = () => {
         },
         body: JSON.stringify({
           address: newWalletAddress,
-          privateKey: newPrivateKey, // À chiffrer plus tard avec Lit Protocol
+          privateKey: newPrivateKey,
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to setup wallet')
+      // Vérifions si la réponse n'est pas ok
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to setup wallet')
+      }
 
+      // Si tout va bien, mettons à jour le wallet
       setWallet({
         address: newWalletAddress,
       })

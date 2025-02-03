@@ -1,21 +1,27 @@
-// app/api/wallet/register/route.ts
+// src/app/api/wallet/setup/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
   try {
-    const { walletAddress, privateKey } = await req.json()
+    const body = await req.json()
+    if (!body.address) {
+      return NextResponse.json({ error: 'Address is required' }, { status: 400 })
+    }
 
     const wallet = await prisma.wallet.create({
       data: {
-        address: walletAddress,
-        encryptedPrivateKey: privateKey, // À remplacer par chiffrement avec Lit Protocol
+        address: body.address,
+        encryptedPrivateKey: body.privateKey || '', // Ajout d'une valeur par défaut
       }
     })
 
-    return NextResponse.json({ success: true, wallet })
+    return NextResponse.json(wallet)
+
   } catch (error) {
-    console.error('Wallet registration failed:', error)
-    return NextResponse.json({ error: 'Failed to register wallet' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to setup wallet' }, 
+      { status: 500 }
+    )
   }
 }
