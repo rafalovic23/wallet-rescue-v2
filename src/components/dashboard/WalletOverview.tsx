@@ -1,48 +1,140 @@
-// src/components/dashboard/WalletOverview.tsx
 'use client'
 
+import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Shield, CheckCircle } from 'lucide-react'
+import { Shield, Copy, CheckCircle } from 'lucide-react'
+import { useWallet } from '@/hooks/useWallet'
 
 export const WalletOverview = () => {
+  const { wallet, setWallet } = useWallet()
+  const [newWalletAddress, setNewWalletAddress] = useState('')
+  const [newPrivateKey, setNewPrivateKey] = useState('')
+  const [isCopied, setIsCopied] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/api/wallet/setup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: newWalletAddress,
+          privateKey: newPrivateKey, // À chiffrer plus tard avec Lit Protocol
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to setup wallet')
+
+      setWallet({
+        address: newWalletAddress,
+      })
+    } catch (error) {
+      console.error('Error setting up wallet:', error)
+    }
+  }
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  if (!wallet) {
+    return (
+      <Card className="bg-secondary border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Add Your Wallet
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Wallet Address
+              </label>
+              <input
+                type="text"
+                value={newWalletAddress}
+                onChange={(e) => setNewWalletAddress(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary-dark border border-gray-800 rounded-md text-white"
+                placeholder="0x..."
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Private Key
+              </label>
+              <input
+                type="password"
+                value={newPrivateKey}
+                onChange={(e) => setNewPrivateKey(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary-dark border border-gray-800 rounded-md text-white"
+                placeholder="Enter your private key"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-md transition-colors"
+            >
+              Set Up Wallet Recovery
+            </button>
+          </form>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="bg-secondary border-gray-800">
       <CardHeader>
-        <CardTitle className="text-white">Wallet Overview</CardTitle>
+        <CardTitle className="text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Wallet Overview
+          </div>
+          <div className="text-sm font-normal text-green-500 flex items-center gap-1">
+            <CheckCircle className="h-4 w-4" />
+            Protected
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Shield className="h-6 w-6 text-primary-light" />
-              </div>
-              <div>
-                <p className="font-medium text-white">Recovery Status</p>
-                <div className="flex items-center mt-1">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  <p className="text-sm text-gray-400">Protected</p>
-                </div>
-              </div>
+          <div>
+            <p className="text-sm text-gray-400 mb-1">Recovery Address</p>
+            <div className="flex items-center justify-between p-2 bg-secondary-dark rounded-lg">
+              <code className="text-sm text-white">
+                {wallet.address}
+              </code>
+              <button
+                onClick={() => copyToClipboard(wallet.address)}
+                className="text-gray-400 hover:text-white transition-colors p-1"
+                title={isCopied ? 'Copied!' : 'Copy address'}
+              >
+                <Copy className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-secondary-dark rounded-lg">
-              <p className="text-sm text-gray-400">Active Guardians</p>
-              <p className="text-2xl font-bold text-white mt-1">3/3</p>
+              <p className="text-sm text-gray-400">Recovery Status</p>
+              <p className="mt-1 text-xl font-semibold text-white">Active</p>
             </div>
             <div className="p-4 bg-secondary-dark rounded-lg">
               <p className="text-sm text-gray-400">Last Verified</p>
-              <p className="text-2xl font-bold text-white mt-1">2d ago</p>
+              <p className="mt-1 text-xl font-semibold text-white">2d ago</p>
             </div>
-          </div>
-
-          <div className="pt-4 border-t border-gray-800">
-            <p className="text-sm text-gray-400 mb-2">Recovery Address</p>
-            <p className="text-sm font-mono text-white bg-secondary-dark p-2 rounded-lg break-all">
-              0x1234...5678
-            </p>
           </div>
         </div>
       </CardContent>

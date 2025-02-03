@@ -53,3 +53,19 @@ enum RequestStatus {
   APPROVED
   REJECTED
 }
+
+model Guardian {
+  id          String   @id @default(cuid())
+  discordId   String
+  status      Status   @default(PENDING)
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  walletId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  REVOKED
+}
